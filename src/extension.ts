@@ -1,7 +1,6 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
-import * as fs from 'fs';
 import { exec } from 'child_process';
 
 // this method is called when your extension is activated
@@ -23,13 +22,10 @@ export function activate(context: vscode.ExtensionContext) {
     let settings = vscode.workspace.getConfiguration('r2g');
     
     const triggers: ChangeTrigger[] = [];
-    //Create info level trigger
-    triggers.push(
-        new ChangeTrigger(settings.get<number>("reminderInfoLevel"), (nrChanges: number) => {
-            vscode.window.showInformationMessage('Hey! You\'ave currently made ' + nrChanges +
-            ' changes to your repo. Think about commiting your current changes!');
-        })
-    );
+    /**
+     * At the moment it is important to add these in correct order where the most highest warning level is index 0
+     * If a user makes a shit ton of changes then saves this makes sure the highest level warning displays and the rest gets deactivated
+     */
     //Create warning level trigger
     triggers.push(
         new ChangeTrigger(settings.get<number>("reminderWarningLevel"), (nrChanges: number) => {
@@ -37,33 +33,50 @@ export function activate(context: vscode.ExtensionContext) {
             ' changes to your repo. Think about your team, commit these changes now!');
         })
     );
+    //Create info level trigger
+    triggers.push(
+        new ChangeTrigger(settings.get<number>("reminderInfoLevel"), (nrChanges: number) => {
+            vscode.window.showInformationMessage('Hey! You\'ave currently made ' + nrChanges +
+            ' changes to your repo. Think about commiting your current changes!');
+        })
+    );
 
     //Search the root dir to find out if this is a git repo or not
     let wsf: vscode.WorkspaceFolder[] | undefined = vscode.workspace.workspaceFolders;
 
     if(wsf !== undefined) {
-        const wdPath: string = wsf[0].uri.fsPath;
-        vscode.window.showInformationMessage('Hey! This is a git repo, do you want to activate g2r?');
+        const wdPath: string = wsf[0].uri.fsPath; 
+        let item = vscode.window.showInformationMessage('Hey! This is a git repo, do you want to activate g2r?', null, "Yes", "No");
 
-        //Start watch task
-        let disposable: vscode.Disposable = vscode.workspace.onDidSaveTextDocument((e: vscode.TextDocument) => {
-            
-            exec(gitExec + ' -C ' + wdPath + '  diff --shortstat',
-                (err: Error, stdout: string, stderr: string) => {
-                if(!err) {
-                    let nrChanges: number = parseShortStatString(stdout);
+        item.then((value) => {
+            if(value === 'Yes') {
+                console.log("Starting g2r");
+                //Start watch task
+                let disposable: vscode.Disposable = vscode.workspace.onDidSaveTextDocument((e: vscode.TextDocument) => {
+                    
+                    exec(gitExec + ' -C ' + wdPath + '  diff --shortstat',
+                        (err: Error, stdout: string, stderr: string) => {
+                        if(!err) {
+                            let nrChanges: number = parseShortStatString(stdout);
+                            let verified: boolean = false;
+                            let i: number;
+                            for(i = 0; i < triggers.length && !verified; i++) {
+                                verified = triggers[i].verify(nrChanges, true);
+                            }
 
-                    if(nrChanges) {
-                        vscode.window.showInformationMessage('Hey! You\'ave currently made ' + nrChanges +
-                                ' changes to your repo. Think about commiting your current changes!');
-                    }
-                } else {
-                    console.log("Something went wrong", err, stderr);
-                }
-            });
+                            //Deactivate the rest
+                            for(; i < triggers.length && verified; i++) {
+                                triggers[i].deactivate();
+                            }
+
+                        } else {
+                            console.log("Something went wrong", err, stderr);
+                        }
+                    });
+                });
+                context.subscriptions.push(disposable);
+            }
         });
-
-        context.subscriptions.push(disposable);
     }
 }
 
@@ -75,21 +88,18 @@ export function deactivate() {
  * Parse a git shortstat message and returns a number that represents total changes
 */
 function parseShortStatString(shortStats: string) : number {
-    console.log(shortStats);    
-    let regex: RegExp = /(\d.)/g; //new RegExp('(\d.)', '/g');
+    let regex: RegExp = /(\d+)/g; //new RegExp('(\d.)', '/g');
     let results: RegExpExecArray | null;
     let changes: number = 0;
-    //Expect to go 3 laps
-    let verifier: number = 3;
-    while(((results = regex.exec(shortStats)) !== null) 
-            || verifier > 0) {             
+    //Helper to skip the first result
+    let skipFirst: boolean = true;
+    while(((results = regex.exec(shortStats)) !== null)) {             
         //Skip first result
-        if(verifier === 3) {
-            //no-op
+        if(skipFirst) {
+            skipFirst = false;
         } else if(results[0]) {
             changes += Number(results[0]);
         }
-        verifier--;
     }
     return changes;
 }
@@ -113,7 +123,8 @@ class ChangeTrigger {
     /**
      * Verifies this trigger by the number of changes, will trigger a message if changes > triggerLevel.
      * @param changeNumber number of changes
-     * @param activateTriggerIfFalse if true we activate this trigger again if verify returns false (aka change number has gone down again)
+     * @param activateTriggerIfFalse if true we activate this trigger again if verify returns false (aka change number has gone down again) 
+     * or if the timeout has passed
      */
     verify(changeNumber: number, activateTriggerIfFalse: boolean) {
         if(this.triggerActive &&
@@ -127,8 +138,11 @@ class ChangeTrigger {
 
             //Deactivate trigger
             this.triggerActive = false;
-        } else if(changeNumber < this.triggerLevel) {
+
+            return true;
+        } else if(changeNumber < this.triggerLevel || Date.now() > this.triggerTimeout) {
             this.triggerActive = activateTriggerIfFalse;
+            return false;
         }
     }
 
@@ -138,6 +152,13 @@ class ChangeTrigger {
      */
     setCustomTimeout(timeOutInSeconds: number) {
         this.triggerTimeout = timeOutInSeconds * 1000;
+    }
+
+    /**
+     * Deactivates this trigger
+     */
+    deactivate() {
+        this.triggerActive = false;
     }
 
 
