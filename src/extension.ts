@@ -87,7 +87,7 @@ export function deactivate() {
 /** 
  * Parse a git shortstat message and returns a number that represents total changes
 */
-function parseShortStatString(shortStats: string) : number {
+export function parseShortStatString(shortStats: string) : number {
     let regex: RegExp = /(\d+)/g; //new RegExp('(\d.)', '/g');
     let results: RegExpExecArray | null;
     let changes: number = 0;
