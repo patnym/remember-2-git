@@ -1,3 +1,6 @@
+# NOTE! - THIS FILE STRUCT IS KEPT FOR FUTURE REFERENCE
+I intend to update readme to relevant content in the future, please be patient
+
 # r2g README
 
 This is the README for your extension "r2g". After writing up a brief description, we recommend including the following sections.
