@@ -20,12 +20,12 @@
             "properties": {
                 "r2g.reminderInfoLevel": {
                     "type": "number",
-                    "default": "50",
+                    "default": "100",
                     "description": "Amount of changes (line adds/removals) until you'll get a info level message that you should commit"
                 },
                 "r2g.reminderWarningLevel": {
                     "type": "number",
-                    "default": "150",
+                    "default": "250",
                     "description": "Amount of changes (line adds/removals) until you'll get a warning level message that you should commit"                        
                 }
             }
