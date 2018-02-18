@@ -7,10 +7,19 @@ import { exec } from 'child_process';
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
+    let gitExec: string = '';
     //Verify git is installed
+    let git = vscode.workspace.getConfiguration('git');
+    if(git.path === null) {
+        //If git isnt defined we must exit
+        vscode.window.showErrorMessage("[g2r] Git path isnt setup, please go into File > Preferences > Settings and setup path then restart VS code");
+        return;
+    } else {
+        //todo: Need to verify this git executable aswell!
+        gitExec = git.path;
+    }
 
-
-    //Retrieve configs
+    //Retrieve ext configs
     let settings = vscode.workspace.getConfiguration('r2g');
     
     const triggers: ChangeTrigger[] = [];
@@ -38,12 +47,10 @@ export function activate(context: vscode.ExtensionContext) {
 
         //Start watch task
         let disposable: vscode.Disposable = vscode.workspace.onDidSaveTextDocument((e: vscode.TextDocument) => {
-            console.log('saved..');
             
-            exec('git -C ' + wdPath + '  diff --shortstat',
+            exec(gitExec + ' -C ' + wdPath + '  diff --shortstat',
                 (err: Error, stdout: string, stderr: string) => {
                 if(!err) {
-                    console.log(stdout);
                     let nrChanges: number = parseShortStatString(stdout);
 
                     if(nrChanges) {
@@ -51,7 +58,7 @@ export function activate(context: vscode.ExtensionContext) {
                                 ' changes to your repo. Think about commiting your current changes!');
                     }
                 } else {
-                    console.log("somthing went wrong", err, stderr);
+                    console.log("Something went wrong", err, stderr);
                 }
             });
         });
