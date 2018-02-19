@@ -27,6 +27,11 @@
                     "type": "number",
                     "default": "250",
                     "description": "Amount of changes (line adds/removals) until you'll get a warning level message that you should commit"
+                },
+                "r2g.reminderTimeout": {
+                    "type": "number",
+                    "default": "300",
+                    "description": "This value specifies the timeout (in seconds) until a trigger (and levels below) can trigger again after it's been activated"
                 }
             }
         }

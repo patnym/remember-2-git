@@ -20,6 +20,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     //Retrieve ext configs
     let settings = vscode.workspace.getConfiguration('r2g');
+    const timeout = settings.get<number>("reminderTimeout");
     
     const triggers: ChangeTrigger[] = [];
     /**
@@ -28,14 +29,14 @@ export function activate(context: vscode.ExtensionContext) {
      */
     //Create warning level trigger
     triggers.push(
-        new ChangeTrigger(settings.get<number>("reminderWarningLevel"), (nrChanges: number) => {
+        new ChangeTrigger(settings.get<number>("reminderWarningLevel"), timeout, (nrChanges: number) => {
             vscode.window.showWarningMessage('Hey! You\'ave currently made ' + nrChanges +
             ' changes to your repo. Think about your team, commit these changes now!');
         })
     );
     //Create info level trigger
     triggers.push(
-        new ChangeTrigger(settings.get<number>("reminderInfoLevel"), (nrChanges: number) => {
+        new ChangeTrigger(settings.get<number>("reminderInfoLevel"), timeout, (nrChanges: number) => {
             vscode.window.showInformationMessage('Hey! You\'ave currently made ' + nrChanges +
             ' changes to your repo. Think about commiting your current changes!');
         })
@@ -58,7 +59,6 @@ export function activate(context: vscode.ExtensionContext) {
                         (err: Error, stdout: string, stderr: string) => {
                         if(!err) {
                             let nrChanges: number = parseShortStatString(stdout);
-                            let verified: boolean = false;
                             let i: number;
                             let triggered: ChangeTrigger | null;
                             for(i = 0; i < triggers.length && !triggered; i++) {
@@ -118,9 +118,12 @@ class ChangeTrigger {
     triggerActive: boolean = true;
     triggerTimeout: number = Date.now();
 
-    constructor(triggerLevel: number, triggerFunc: Function) {
+    timeoutAmount: number;
+
+    constructor(triggerLevel: number, timeoutAmount: number, triggerFunc: Function) {
         this.triggerLevel = triggerLevel;
         this.triggerFunc = triggerFunc;
+        this.timeoutAmount = timeoutAmount;
     }
 
     /**
@@ -137,7 +140,7 @@ class ChangeTrigger {
 
             //Set trigger timeout, this just pervents 10 triggers in a row if som1 is a bit spastic
             //Currently set to 5 minutes
-            this.setCustomTimeout(300);
+            this.setCustomTimeout(this.timeoutAmount);
 
             //Deactivate trigger
             this.triggerActive = false;
@@ -154,6 +157,7 @@ class ChangeTrigger {
      * @param timeOutInSeconds How long this trigger is deactivated in seconds
      */
     setCustomTimeout(timeOutInSeconds: number) {
+        console.log("Timing out for " + (this.timeoutAmount / 60) + " minutes");
         this.triggerTimeout = Date.now() + (timeOutInSeconds * 1000);
     }
 
