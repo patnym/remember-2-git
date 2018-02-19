@@ -2,7 +2,7 @@
     "name": "r2g",
     "displayName": "remember 2 git",
     "description": "Remember too git is a tool that watches your current working repo and will remind you to git commit more often.",
-    "version": "1.0.0",
+    "version": "1.0.2",
     "publisher": "patnym",
     "engines": {
         "vscode": "^1.20.0"
