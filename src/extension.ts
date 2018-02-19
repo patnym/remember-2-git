@@ -60,13 +60,16 @@ export function activate(context: vscode.ExtensionContext) {
                             let nrChanges: number = parseShortStatString(stdout);
                             let verified: boolean = false;
                             let i: number;
-                            for(i = 0; i < triggers.length && !verified; i++) {
-                                verified = triggers[i].verify(nrChanges, true);
+                            let triggered: ChangeTrigger | null;
+                            for(i = 0; i < triggers.length && !triggered; i++) {
+                                if(triggers[i].verify(nrChanges, true)) {
+                                    triggered = triggers[i];
+                                }
                             }
 
                             //Deactivate the rest
-                            for(; i < triggers.length && verified; i++) {
-                                triggers[i].deactivate();
+                            for(; i < triggers.length && triggered; i++) {
+                                triggers[i].deactivate(triggered.getTimeout());
                             }
 
                         } else {
@@ -132,7 +135,7 @@ class ChangeTrigger {
             Date.now() > this.triggerTimeout) {
             this.triggerFunc(changeNumber);
 
-            //Set trigger timeout, this just pervents 10 triggers in a row if som1 is a bit  spastic
+            //Set trigger timeout, this just pervents 10 triggers in a row if som1 is a bit spastic
             //Currently set to 5 minutes
             this.setCustomTimeout(300);
 
@@ -151,14 +154,23 @@ class ChangeTrigger {
      * @param timeOutInSeconds How long this trigger is deactivated in seconds
      */
     setCustomTimeout(timeOutInSeconds: number) {
-        this.triggerTimeout = timeOutInSeconds * 1000;
+        this.triggerTimeout = Date.now() + (timeOutInSeconds * 1000);
     }
 
     /**
      * Deactivates this trigger
+     * @param timeout - If set also sets a timeout on the trigger
      */
-    deactivate() {
+    deactivate(timeout) {
         this.triggerActive = false;
+        this.triggerTimeout = timeout || this.triggerTimeout;
+    }
+
+    /**
+     * Returns the timeout set by this trigger
+     */
+    getTimeout() {
+        return this.triggerTimeout;
     }
 
 
