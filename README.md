@@ -29,6 +29,10 @@ Initial release
 * Support info and warning level reminders
 * Supprort timeouts, aka if you ignore a reminder, 5 min later it will trigger again
 
+### 1.0.2
+
+* User can now modify the timeout used when a message is triggered. It defaults to 5 minutes
+
 ## Github repo
 
 https://github.com/patnym/remember-2-git
