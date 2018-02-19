@@ -1,68 +1,34 @@
-# NOTE! - THIS FILE STRUCT IS KEPT FOR FUTURE REFERENCE
-I intend to update readme to relevant content in the future, please be patient
-
-# r2g README
-
-This is the README for your extension "r2g". After writing up a brief description, we recommend including the following sections.
-
 ## Features
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
-
-For example if there is an image subfolder under your extension project workspace:
-
-\!\[feature X\]\(images/feature-x.png\)
-
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+If your current working directory is a git repo it can watch your changes and remind you to git commit more often to prevent HUGE commits
 
 ## Requirements
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+Git - Download at Git official [homepage](https://git-scm.com/downloads)
 
 ## Extension Settings
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
-
-For example:
-
-This extension contributes the following settings:
-
-* `myExtension.enable`: enable/disable this extension
-* `myExtension.thing`: set to `blah` to do something
+* `r2g.reminderInfoLevel`: Number represents total amount of changes until a info level message triggers
+* `r2g.reminderWarningLevel`: Same as info but a warning level message trigger
 
 ## Known Issues
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
+When specifying git.path on windows you must use " around the entire path if git is installed in a directory  with spaces, ex:
 
-## Release Notes
+If installed in "Program Files" ( C:\Program Files\Git\bin )
 
-Users appreciate release notes as you update your extension.
+`git.path` = "\"C:\\Program Files\\Git\\bin\\git.exe\"" 
+
+## Release notes
 
 ### 1.0.0
 
-Initial release of ...
+Initial release
 
-### 1.0.1
+* Support info and warning level reminders
+* Supprort timeouts, aka if you ignore a reminder, 5 min later it will trigger again
 
-Fixed issue #.
+## Github repo
 
-### 1.1.0
+https://github.com/patnym/remember-2-git
 
-Added features X, Y, and Z.
-
------------------------------------------------------------------------------------------------------------
-
-## Working with Markdown
-
-**Note:** You can author your README using Visual Studio Code.  Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on OSX or `Ctrl+\` on Windows and Linux)
-* Toggle preview (`Shift+CMD+V` on OSX or `Shift+Ctrl+V` on Windows and Linux)
-* Press `Ctrl+Space` (Windows, Linux) or `Cmd+Space` (OSX) to see a list of Markdown snippets
-
-### For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
