@@ -10,6 +10,7 @@ Git - Download at Git official [homepage](https://git-scm.com/downloads)
 
 * `r2g.reminderInfoLevel`: Number represents total amount of changes until a info level message triggers
 * `r2g.reminderWarningLevel`: Same as info but a warning level message trigger
+* `r2g.reminderTimeout`: This value specifies the timeout (in seconds) until a trigger (and levels below) can trigger again after it's been activated
 
 ## Known Issues
 

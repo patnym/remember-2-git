@@ -1,7 +1,16 @@
 # Change Log
-All notable changes to the "r2g" extension will be documented in this file.
 
-Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
+## [1.0.0]
 
-## [Unreleased]
-- Initial release
+### Initial release
+* Support info and warning level reminders
+* Supprort timeouts, aka if you ignore a reminder, 5 min later it will trigger again
+
+## [1.0.2]
+
+### Info/Warning level message bug fixes
+* Fixed a bug causing the warning/info message to spam the user
+* Now timeouts all messages below the warning level that occurred correctly
+
+### New config values
+* User can now modify the timeout used when a message is triggered. It defaults to 5 minutes
